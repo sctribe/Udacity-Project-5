@@ -88,6 +88,8 @@ function viewModel() {
           new google.maps.LatLng(bounds.ne.lat, bounds.ne.lng));
         map.fitBounds(LatLngBounds);
       }
+    }).fail(function (e){
+        $('#no-result').text("Foursquare API Could Not Be Loaded");
     });
   }
  
@@ -127,6 +129,15 @@ function viewModel() {
     //push popular place in to an array. Used in searching
     venueMarkers.push(new markers(marker, name.toLowerCase(), category.toLowerCase(), position));
 
+    function toggleBounce(){
+      if (marker.getAnimation() !== null) {
+        marker.setAnimation(null);
+      } else {
+        marker.setAnimation(google.maps.Animation.BOUNCE);
+      }
+    }
+
+
     //HTML for the infowindow
     var infoWindowDisplay = '<div class="infoWindow"><p><span class="venueName">' + name +
       '</span></p><p class="venueCat"><span>' + category + 
@@ -139,7 +150,10 @@ function viewModel() {
       infoWindow.setContent(infoWindowDisplay);
       infoWindow.open(map, this);
       map.panTo(position);
+      
     });
+
+    marker.addListener('click', toggleBounce);
   }
 
    //list toggle method. open/close the list view
@@ -158,6 +172,7 @@ function viewModel() {
       if (venueMarkers[i].name === venueName) {
         google.maps.event.trigger(venueMarkers[i].marker, 'click');
         map.panTo(venueMarkers[i].position);
+        toggleBounce();
       }
     }
   };
