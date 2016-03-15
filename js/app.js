@@ -6,6 +6,11 @@ var markers = function(marker, name, category, position) {
   this.position = position
 };
 
+function googleError(){
+  $("#map").text('Google Maps could not be loaded...');
+
+}
+
 // View Model of the app.
 function viewModel() {
   var self = this;
@@ -42,10 +47,15 @@ function viewModel() {
     };
     map = new google.maps.Map(document.querySelector('#map'), mapOptions);
     infoWindow = new google.maps.InfoWindow();
-  };
+  }
 
   //initialize map
   initializeMap();
+
+//initialize view model binding
+$(function() {
+  ko.applyBindings(new viewModel());
+});
 
   //request neighborhood location data from PlaceService
   function getNeighborhood(neighborhood) {
@@ -59,7 +69,7 @@ function viewModel() {
   //callback method for neighborhood location
   function callback(results, status) {
     if (status === google.maps.places.PlacesServiceStatus.OK) {
-      getNeighborhoodInformation(results[0])
+      getNeighborhoodInformation(results[0]);
     }
   }
 
@@ -82,7 +92,7 @@ function viewModel() {
 
       //changes zoom based on foursquare response
       var bounds = data.response.suggestedBounds;
-      if (bounds != undefined) {
+      if (bounds !== undefined) {
         LatLngBounds = new google.maps.LatLngBounds(
           new google.maps.LatLng(bounds.sw.lat, bounds.sw.lng),
           new google.maps.LatLng(bounds.ne.lat, bounds.ne.lng));
@@ -130,11 +140,8 @@ function viewModel() {
     venueMarkers.push(new markers(marker, name.toLowerCase(), category.toLowerCase(), position));
 
     function toggleBounce(){
-      if (marker.getAnimation() !== null) {
-        marker.setAnimation(null);
-      } else {
-        marker.setAnimation(google.maps.Animation.BOUNCE);
-      }
+       marker.setAnimation(google.maps.Animation.BOUNCE);
+    setTimeout(function(){ marker.setAnimation(null); }, 2100);
     }
 
 
@@ -150,6 +157,8 @@ function viewModel() {
       infoWindow.setContent(infoWindowDisplay);
       infoWindow.open(map, this);
       map.panTo(position);
+      //marker.setIcon('https://mt.google.com/vt/icon?color=ff004C13&name=' +
+        //   'icons/spotlight/spotlight-waypoint-blue.png');
       
     });
 
@@ -212,10 +221,8 @@ function viewModel() {
 
 }
 
-//initialize view model binding
-$(function() {
-  ko.applyBindings(new viewModel());
-});
+
+
 
 
 
