@@ -91,6 +91,7 @@ body {
 .list-title h2 {
   margin: 0px;
   margin-left: 3px;
+  padding-top: 4px;
 }
 
 .infoWindow {

@@ -8,17 +8,17 @@ var markers = function(marker, name, category, position) {
 
 function googleError(){
   $("#map").text('Google Maps could not be loaded...');
+  console.log("error");
 
 }
 
+
 // View Model of the app.
 function viewModel() {
-  var self = this;
-  var map;    
+  var self = this;   
   var LatLngBounds;
-  var neighborhoodArea = "Los Angeles";
+  self.neighborhoodArea = "Los Angeles";
   var neighborhoodLoc;  
-  var infoWindow;
   var venueMarkers = [];
 
   self.topPlaces = ko.observableArray([]); //top places in Los Angeles from Foursquare
@@ -33,36 +33,22 @@ function viewModel() {
 
   //update map size when window is resized
   window.addEventListener('resize', function(e) {
-    map.fitBounds(LatLngBounds);
+    self.map.fitBounds(LatLngBounds);
     $("#map").height($(window).height());
   });
 
-  function initializeMap() {
-    var mapOptions = {
-     
-      zoom: 13,
-      disableDefaultUI: true,
-      zoomControl: true,
-      streetViewControl:true
-    };
-    map = new google.maps.Map(document.querySelector('#map'), mapOptions);
-    infoWindow = new google.maps.InfoWindow();
-  }
+  //console.log("test 1");
 
   //initialize map
-  initializeMap();
+  //initializeMap();
 
-//initialize view model binding
-$(function() {
-  ko.applyBindings(new viewModel());
-});
 
   //request neighborhood location data from PlaceService
-  function getNeighborhood(neighborhood) {
+  self.getNeighborhood = function(neighborhood) {
     var request = {
       query: neighborhood
     };
-    neighborhoodLoc = new google.maps.places.PlacesService(map);
+    neighborhoodLoc = new google.maps.places.PlacesService(self.map);
     neighborhoodLoc.textSearch(request, callback);
   }
 
@@ -72,6 +58,8 @@ $(function() {
       getNeighborhoodInformation(results[0]);
     }
   }
+
+  //console.log('test 2');
 
 //Get top 50 places in neighborhood from foursquare
   function getNeighborhoodInformation(neighborhoodInfo) {
@@ -96,14 +84,14 @@ $(function() {
         LatLngBounds = new google.maps.LatLngBounds(
           new google.maps.LatLng(bounds.sw.lat, bounds.sw.lng),
           new google.maps.LatLng(bounds.ne.lat, bounds.ne.lng));
-        map.fitBounds(LatLngBounds);
+        self.map.fitBounds(LatLngBounds);
       }
     }).fail(function (e){
         $('#no-result').text("Foursquare API Could Not Be Loaded");
     });
   }
  
-  getNeighborhood(neighborhoodArea);
+  //getNeighborhood(neighborhoodArea);
 
   //set markers on locations provided by foursquare
   function setMarkers(venue) {
@@ -131,7 +119,7 @@ $(function() {
 
     //put marker on one of the popular places
     var marker = new google.maps.Marker({
-      map: map,
+      map: self.map,
       position: position,
       title: name
     });
@@ -154,9 +142,9 @@ $(function() {
 
     //set markers on map and move map center to marker on infowindow open
     google.maps.event.addListener(marker, 'click', function() {
-      infoWindow.setContent(infoWindowDisplay);
-      infoWindow.open(map, this);
-      map.panTo(position);
+      self.infoWindow.setContent(infoWindowDisplay);
+      self.infoWindow.open(self.map, this);
+      self.map.panTo(position);
       //marker.setIcon('https://mt.google.com/vt/icon?color=ff004C13&name=' +
         //   'icons/spotlight/spotlight-waypoint-blue.png');
       
@@ -165,6 +153,7 @@ $(function() {
     marker.addListener('click', toggleBounce);
   }
 
+  //console.log('test 3');
    //list toggle method. open/close the list view
   self.listOpenClose = function() {
     if (self.listOn() === true) {
@@ -180,7 +169,7 @@ $(function() {
     for (var i in venueMarkers) {
       if (venueMarkers[i].name === venueName) {
         google.maps.event.trigger(venueMarkers[i].marker, 'click');
-        map.panTo(venueMarkers[i].position);
+        self.map.panTo(venueMarkers[i].position);
         toggleBounce();
       }
     }
@@ -205,7 +194,7 @@ $(function() {
   function searchMarkers(searchWord) {
     for (var i in venueMarkers) {
       if (venueMarkers[i].marker.map === null) {
-        venueMarkers[i].marker.setMap(map);
+        venueMarkers[i].marker.setMap(self.map);
       }
       if (venueMarkers[i].name.indexOf(searchWord) === -1 &&
         venueMarkers[i].category.indexOf(searchWord) === -1) {
@@ -221,6 +210,28 @@ $(function() {
 
 }
 
+function initializeMap() {
+
+    var vm = new viewModel();
+
+    var mapOptions = {
+     
+      zoom: 13,
+      disableDefaultUI: true,
+      zoomControl: true,
+      streetViewControl:true
+    };
+    vm.map = new google.maps.Map(document.querySelector('#map'), mapOptions);
+    vm.infoWindow = new google.maps.InfoWindow();
+    vm.getNeighborhood(vm.neighborhoodArea);
+
+    
+//initialize view model binding
+  //console.log('test 4');
+  ko.applyBindings(vm);
+
+
+}
 
 
 
